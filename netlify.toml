@@ -1,0 +1,58 @@
+# ╔══════════════════════════════════════════════════════╗
+#   FADAX DRAK AI — Netlify Configuration
+# ╚══════════════════════════════════════════════════════╝
+
+[build]
+  # Folder tempat file HTML/JS/CSS kamu berada
+  publish = "."
+  # Folder Netlify Functions
+  functions = "netlify/functions"
+
+# ── Redirect /api/* ke Netlify Functions ──
+# Tanpa ini, /api/auth/login tidak akan ditemukan
+
+[[redirects]]
+  from   = "/api/auth/*"
+  to     = "/.netlify/functions/auth/:splat"
+  status = 200
+
+[[redirects]]
+  from   = "/api/chat/*"
+  to     = "/.netlify/functions/chat/:splat"
+  status = 200
+
+[[redirects]]
+  from   = "/api/chat"
+  to     = "/.netlify/functions/chat"
+  status = 200
+
+# ── SPA fallback — semua route ke index/login ──
+[[redirects]]
+  from   = "/ai"
+  to     = "/ai.html"
+  status = 200
+
+[[redirects]]
+  from   = "/login"
+  to     = "/login.html"
+  status = 200
+
+# ── Header keamanan ──
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options        = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy        = "strict-origin-when-cross-origin"
+
+# ── Cache HTML (jangan di-cache agar selalu fresh) ──
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+# ── Cache assets JS (boleh di-cache) ──
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"

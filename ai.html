@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>kagui AI — FADAX DRAK</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg:    #080808;
+            --bg2:   #0e0404;
+            --border: rgba(139,0,0,0.22);
+            --border2: rgba(139,0,0,0.1);
+            --red:   #8b0000;
+            --red2:  #b00000;
+            --red3:  #ff5555;
+            --dim:   #555;
+            --txt:   #e8e8e8;
+            --txt2:  #888;
+            --green: #22c55e;
+            --ui:    'JetBrains Mono', monospace;
+            --hd:    'Orbitron', sans-serif;
+        }
+        html,body { height:100%; background:var(--bg); color:var(--txt); font-family:var(--ui); font-size:14px; overflow:hidden; }
+
+        /* ─── LAYOUT ─── */
+        .app { display:grid; grid-template-columns:240px 1fr; grid-template-rows:52px 1fr; height:100vh;
+            grid-template-areas: "topbar topbar" "sidebar chat"; }
+
+        /* ─── TOPBAR ─── */
+        .topbar { grid-area:topbar; background:rgba(6,0,0,0.97); border-bottom:1px solid var(--border);
+            display:flex; align-items:center; padding:0 1.2rem; gap:1rem; backdrop-filter:blur(20px); z-index:100; }
+        .topbar-logo { display:flex; align-items:center; gap:0.6rem; text-decoration:none; }
+        .logo-img { width:32px; height:32px; border-radius:50%; background:url('https://files.catbox.moe/le2tsc.jpg') center/cover;
+            border:1px solid var(--red); box-shadow:0 0 8px rgba(139,0,0,0.35); }
+        .logo-name { font-family:var(--hd); font-size:0.85rem; font-weight:900; letter-spacing:2px;
+            background:linear-gradient(135deg,#cc0000,#660000); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .topbar-div { width:1px; height:20px; background:var(--border); margin:0 0.3rem; }
+        .topbar-label { font-size:0.7rem; color:var(--txt2); letter-spacing:1.5px; text-transform:uppercase; }
+        .topbar-right { margin-left:auto; display:flex; align-items:center; gap:0.5rem; }
+        .tb-btn { background:transparent; border:1px solid var(--border); border-radius:6px; color:var(--txt2);
+            padding:0.3rem 0.65rem; font-family:var(--ui); font-size:0.7rem; cursor:pointer; transition:all 0.15s;
+            display:flex; align-items:center; gap:0.35rem; }
+        .tb-btn:hover { border-color:var(--red); color:var(--txt); }
+        .tb-btn.danger:hover { border-color:var(--red3); color:var(--red3); }
+        .user-pill { display:flex; align-items:center; gap:0.45rem; background:rgba(139,0,0,0.1);
+            border:1px solid var(--border); border-radius:20px; padding:0.25rem 0.75rem 0.25rem 0.35rem; }
+        .user-av { width:20px; height:20px; background:linear-gradient(135deg,#8b0000,#440000);
+            border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.55rem; }
+        .user-name { font-size:0.7rem; color:var(--txt2); }
+
+        /* ─── SIDEBAR ─── */
+        .sidebar { grid-area:sidebar; background:var(--bg2); border-right:1px solid var(--border);
+            display:flex; flex-direction:column; overflow:hidden; }
+        .sb-head { padding:0.85rem 0.9rem 0.7rem; border-bottom:1px solid var(--border2);
+            display:flex; align-items:center; justify-content:space-between; }
+        .sb-head-lbl { font-size:0.65rem; letter-spacing:2px; text-transform:uppercase; color:var(--dim); }
+        .new-btn { background:var(--red); border:none; border-radius:6px; color:#fff; width:24px; height:24px;
+            cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:0.7rem; transition:all 0.15s; }
+        .new-btn:hover { background:var(--red2); transform:scale(1.08); }
+
+        .model-row { padding:0.6rem 0.9rem; display:flex; align-items:center; gap:0.6rem; border-bottom:1px solid var(--border2); }
+        .m-dot { width:6px; height:6px; border-radius:50%; background:var(--green); box-shadow:0 0 5px var(--green); animation:blink 2s infinite; flex-shrink:0; }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        .m-select { flex:1; background:transparent; border:none; color:var(--txt2); font-family:var(--ui); font-size:0.7rem; cursor:pointer; outline:none; }
+        .m-select option { background:#0e0404; }
+
+        .stats-strip { display:grid; grid-template-columns:1fr 1fr; gap:0.4rem; padding:0.55rem 0.9rem; border-bottom:1px solid var(--border2); }
+        .sbox { background:rgba(0,0,0,0.3); border-radius:5px; padding:0.4rem 0.5rem; text-align:center; }
+        .sbox-v { font-family:var(--hd); font-size:0.85rem; color:#cc4444; }
+        .sbox-l { font-size:0.58rem; color:var(--dim); text-transform:uppercase; letter-spacing:1px; }
+
+        .hist-list { flex:1; overflow-y:auto; padding:0.4rem; display:flex; flex-direction:column; gap:1px; }
+        .hist-list::-webkit-scrollbar { width:2px; }
+        .hist-list::-webkit-scrollbar-thumb { background:var(--border); }
+        .hist-empty { text-align:center; color:var(--dim); font-size:0.68rem; padding:2rem 0.5rem; line-height:2; }
+        .hist-item { padding:0.5rem 0.65rem; border-radius:6px; cursor:pointer; border:1px solid transparent;
+            transition:all 0.12s; display:flex; align-items:center; gap:0.45rem; }
+        .hist-item:hover, .hist-item.active { background:rgba(139,0,0,0.1); border-color:var(--border); }
+        .hist-ico { color:var(--dim); font-size:0.65rem; flex-shrink:0; }
+        .hist-txt { font-size:0.68rem; color:var(--txt2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; }
+
+        .qs-section { padding:0.5rem 0.5rem; border-top:1px solid var(--border2); }
+        .qs-lbl { font-size:0.58rem; letter-spacing:2px; text-transform:uppercase; color:var(--dim); padding:0 0.3rem 0.35rem; }
+        .qs-grid { display:flex; flex-direction:column; gap:1px; }
+        .qs-btn { background:transparent; border:1px solid var(--border2); border-radius:5px; color:var(--txt2); font-family:var(--ui);
+            font-size:0.66rem; padding:0.38rem 0.6rem; text-align:left; cursor:pointer; transition:all 0.12s;
+            display:flex; align-items:center; gap:0.38rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .qs-btn i { color:#cc3333; font-size:0.6rem; flex-shrink:0; }
+        .qs-btn:hover { border-color:var(--red); color:var(--txt); background:rgba(139,0,0,0.07); }
+
+        .sb-foot { padding:0.5rem; border-top:1px solid var(--border2); }
+        .sb-act { background:transparent; border:none; color:var(--dim); font-family:var(--ui); font-size:0.68rem;
+            padding:0.38rem 0.6rem; border-radius:5px; cursor:pointer; text-align:left; display:flex; align-items:center; gap:0.45rem; width:100%; transition:all 0.12s; }
+        .sb-act:hover { background:rgba(255,255,255,0.03); color:var(--txt); }
+        .sb-act.danger:hover { color:var(--red3); }
+
+        /* ─── CHAT ─── */
+        .chat-area { grid-area:chat; display:flex; flex-direction:column; overflow:hidden; background:var(--bg); position:relative; }
+        .chat-area::before { content:''; position:absolute; inset:0;
+            background-image:linear-gradient(rgba(139,0,0,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(139,0,0,0.025) 1px,transparent 1px);
+            background-size:48px 48px; pointer-events:none; }
+
+        /* ─── MESSAGES ─── */
+        .messages { flex:1; overflow-y:auto; padding:1.4rem 10% 0.8rem; display:flex; flex-direction:column; gap:0; position:relative; z-index:1; scroll-behavior:smooth; }
+        .messages::-webkit-scrollbar { width:3px; }
+        .messages::-webkit-scrollbar-thumb { background:rgba(139,0,0,0.18); border-radius:2px; }
+
+        /* Welcome */
+        .welcome { display:flex; flex-direction:column; align-items:center; justify-content:center;
+            height:100%; text-align:center; gap:0.9rem; animation:fadeUp 0.5s ease both; }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+        .w-orb {
+            width:90px; height:90px; border-radius:50%;
+            background:url('https://files.catbox.moe/le2tsc.jpg') center/cover;
+            border:2px solid var(--red);
+            box-shadow:0 0 0 5px rgba(139,0,0,0.1),0 0 30px rgba(139,0,0,0.4),0 0 60px rgba(139,0,0,0.1);
+            animation:orb 3.5s ease-in-out infinite;
+            position:relative;
+        }
+        .w-orb::after {
+            content:''; position:absolute; inset:-6px; border-radius:50%;
+            border:1px solid rgba(139,0,0,0.25);
+            background:conic-gradient(from 0deg,transparent 75%,rgba(139,0,0,0.5) 100%);
+            animation:ring-spin 6s linear infinite;
+        }
+        @keyframes ring-spin { to{transform:rotate(360deg)} }
+        @keyframes orb { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+        .w-title { font-family:var(--hd); font-size:1.25rem; letter-spacing:3px;
+            background:linear-gradient(135deg,#fff 0%,#cc4444 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .w-sub { color:var(--txt2); font-size:0.8rem; max-width:340px; line-height:1.8; }
+        .w-hints { display:flex; flex-wrap:wrap; gap:0.45rem; justify-content:center; max-width:440px; }
+        .hint { background:rgba(139,0,0,0.08); border:1px solid var(--border); border-radius:18px;
+            padding:0.3rem 0.8rem; font-size:0.7rem; color:var(--txt2); cursor:pointer; transition:all 0.15s; }
+        .hint:hover { background:rgba(139,0,0,0.18); color:var(--txt); border-color:var(--red); }
+
+        /* Date separator */
+        .date-sep { display:flex; align-items:center; gap:0.8rem; margin:1rem 0 0.8rem; }
+        .date-sep::before, .date-sep::after { content:''; flex:1; height:1px; background:var(--border2); }
+        .date-sep span { font-size:0.62rem; color:var(--dim); white-space:nowrap; }
+
+        /* Message group */
+        .msg-group { display:flex; flex-direction:column; margin-bottom:1.2rem; animation:msgpop 0.22s ease both; }
+        @keyframes msgpop { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+        .msg-group.user { align-items:flex-end; }
+        .msg-group.assistant { align-items:flex-start; }
+
+        .msg-row { display:flex; align-items:flex-end; gap:0.55rem; max-width:68%; }
+        .msg-group.user .msg-row { flex-direction:row-reverse; }
+
+        .m-av { width:30px; height:30px; border-radius:50%; flex-shrink:0;
+            display:flex; align-items:center; justify-content:center; font-size:0.75rem; margin-bottom:1px; }
+        .msg-group.user .m-av { background:linear-gradient(135deg,#8b0000,#440000); box-shadow:0 0 7px rgba(139,0,0,0.25); }
+        .msg-group.assistant .m-av {
+            background:url('https://files.catbox.moe/le2tsc.jpg') center/cover;
+            border:1px solid rgba(139,0,0,0.4);
+            box-shadow:0 0 6px rgba(139,0,0,0.2);
+        }
+        /* hide the robot icon for assistant — avatar shows image */
+        .msg-group.assistant .m-av i { display:none; }
+
+        .bubble { padding:0.7rem 0.95rem; border-radius:13px; font-size:0.84rem; line-height:1.65; word-break:break-word; }
+        .msg-group.user .bubble { background:linear-gradient(135deg,rgba(139,0,0,0.32),rgba(90,0,0,0.22)); border:1px solid rgba(139,0,0,0.3); border-bottom-right-radius:3px; color:#f0f0f0; }
+        .msg-group.assistant .bubble { background:rgba(16,4,4,0.88); border:1px solid rgba(139,0,0,0.15); border-bottom-left-radius:3px; color:#e0e0e0; }
+
+        .bubble code { background:rgba(0,0,0,0.55); border:1px solid rgba(139,0,0,0.2); border-radius:4px; padding:0.1em 0.4em; font-size:0.8em; color:#ff8888; }
+        .bubble pre { background:rgba(0,0,0,0.75); border:1px solid rgba(139,0,0,0.2); border-left:3px solid var(--red); border-radius:8px; padding:0.85rem 1rem; overflow-x:auto; margin:0.6rem 0; position:relative; }
+        .bubble pre code { background:none; border:none; padding:0; color:#7ec8a0; font-size:0.8em; }
+        .copy-btn { position:absolute; top:0.45rem; right:0.45rem; background:rgba(139,0,0,0.3); border:1px solid var(--border); border-radius:4px; color:var(--txt2); font-size:0.62rem; padding:0.18rem 0.45rem; cursor:pointer; font-family:var(--ui); transition:all 0.15s; }
+        .copy-btn:hover { color:var(--txt); background:rgba(139,0,0,0.5); }
+
+        .msg-meta { font-size:0.6rem; color:var(--dim); margin-top:0.25rem; padding:0 0.4rem; display:flex; gap:0.5rem; align-items:center; }
+        .msg-group.user .msg-meta { justify-content:flex-end; }
+        .meta-actions { display:none; gap:0.3rem; }
+        .msg-group:hover .meta-actions { display:flex; }
+        .meta-act { background:transparent; border:1px solid var(--border2); border-radius:4px; color:var(--dim); font-size:0.58rem; padding:0.15rem 0.4rem; cursor:pointer; font-family:var(--ui); transition:all 0.12s; }
+        .meta-act:hover { color:var(--txt); border-color:var(--border); }
+
+        /* Typing */
+        .typing-row { display:flex; align-items:flex-end; gap:0.55rem; margin-bottom:1.2rem; animation:msgpop 0.2s ease both; }
+        .typing-bub { background:rgba(16,4,4,0.88); border:1px solid rgba(139,0,0,0.15); border-radius:13px; border-bottom-left-radius:3px; padding:0.65rem 0.9rem; display:flex; gap:4px; align-items:center; }
+        .t-dot { width:5px; height:5px; border-radius:50%; background:#aa2222; animation:tdot 1.2s infinite; }
+        .t-dot:nth-child(2){animation-delay:0.18s} .t-dot:nth-child(3){animation-delay:0.36s}
+        @keyframes tdot { 0%,60%,100%{transform:translateY(0);opacity:0.3} 30%{transform:translateY(-5px);opacity:1} }
+
+        /* ─── INPUT BAR ─── */
+        .input-bar { padding:0.7rem 10% 0.9rem; position:relative; z-index:10;
+            background:linear-gradient(to top, rgba(8,0,0,0.98) 55%, transparent); }
+        .input-shell { display:flex; align-items:flex-end; gap:0.55rem; background:rgba(12,3,3,0.97);
+            border:1px solid var(--border); border-radius:14px; padding:0.55rem 0.55rem 0.55rem 1rem; transition:border-color 0.2s,box-shadow 0.2s; }
+        .input-shell:focus-within { border-color:rgba(139,0,0,0.45); box-shadow:0 0 0 2px rgba(139,0,0,0.08),0 0 18px rgba(139,0,0,0.06); }
+        .chat-ta { flex:1; background:transparent; border:none; outline:none; color:var(--txt);
+            font-family:var(--ui); font-size:0.86rem; resize:none; min-height:22px; max-height:150px; line-height:1.55; padding:0.18rem 0; }
+        .chat-ta::placeholder { color:rgba(120,80,80,0.45); }
+        .in-right { display:flex; align-items:center; gap:0.4rem; flex-shrink:0; }
+        .char-ct { font-size:0.62rem; color:var(--dim); }
+        .send-btn { width:34px; height:34px; background:linear-gradient(135deg,#8b0000,#500000); border:none; border-radius:9px;
+            color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:0.82rem;
+            transition:all 0.2s; box-shadow:0 0 10px rgba(139,0,0,0.2); flex-shrink:0; }
+        .send-btn:hover:not(:disabled) { background:linear-gradient(135deg,#aa0000,#650000); transform:scale(1.06); }
+        .send-btn:disabled { opacity:0.35; cursor:not-allowed; }
+        .bar-hint { text-align:center; font-size:0.6rem; color:var(--dim); margin-top:0.4rem; letter-spacing:0.5px; }
+
+        /* TOAST */
+        .toast { position:fixed; bottom:1.4rem; right:1.4rem; background:#150303; border:1px solid rgba(180,0,0,0.4);
+            border-radius:9px; padding:0.65rem 0.9rem; font-size:0.76rem; color:#ff9999; z-index:9999;
+            display:flex; align-items:center; gap:0.55rem; max-width:300px; transform:translateX(130%);
+            transition:transform 0.28s cubic-bezier(0.4,0,0.2,1); box-shadow:0 4px 18px rgba(0,0,0,0.55); }
+        .toast.show{transform:translateX(0)} .toast.ok{border-color:rgba(34,197,94,0.35);color:#6ee7a0}
+
+        /* RESPONSIVE */
+        @media(max-width:768px){
+            .app{grid-template-columns:1fr;grid-template-areas:"topbar""chat"}
+            .sidebar{display:none}
+            .messages,.input-bar{padding-left:1rem;padding-right:1rem}
+            .msg-row{max-width:86%}
+        }
+        *{scrollbar-width:thin;scrollbar-color:rgba(139,0,0,0.18) transparent}
+    </style>
+</head>
+<body>
+<div class="app">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+        <a href="index.html" class="topbar-logo">
+            <div class="logo-img"></div>
+            <span class="logo-name">FADAX</span>
+        </a>
+        <div class="topbar-div"></div>
+        <span class="topbar-label">AI Chat</span>
+        <div class="topbar-right">
+            <button class="tb-btn" id="exportBtn"><i class="fas fa-download"></i> Export</button>
+            <div class="user-pill">
+                <div class="user-av"><i class="fas fa-user"></i></div>
+                <span class="user-name" id="userNameDisplay">Guest</span>
+            </div>
+            <button class="tb-btn danger" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+    </header>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sb-head">
+            <span class="sb-head-lbl">Chats</span>
+            <button class="new-btn" id="newChatBtn" title="New Chat"><i class="fas fa-plus"></i></button>
+        </div>
+        <div class="model-row">
+            <div class="m-dot"></div>
+            <select class="m-select" id="modelSelect">
+                <option value="gpt-4o-mini">GPT-4o Mini</option>
+                <option value="gpt-4o">GPT-4o</option>
+                <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+            </select>
+        </div>
+        <div class="stats-strip">
+            <div class="sbox"><div class="sbox-v" id="statMsgs">0</div><div class="sbox-l">Pesan</div></div>
+            <div class="sbox"><div class="sbox-v" id="statTokens">0</div><div class="sbox-l">Token</div></div>
+        </div>
+        <div class="hist-list" id="historyList">
+            <div class="hist-empty">
+                <i class="fas fa-comment-slash" style="font-size:1.3rem;opacity:0.25;display:block;margin-bottom:0.5rem"></i>
+                Belum ada riwayat
+            </div>
+        </div>
+        <div class="qs-section">
+            <div class="qs-lbl">Quick Prompts</div>
+            <div class="qs-grid">
+                <button class="qs-btn" data-prompt="Jelaskan cara kerja neural network dengan analogi sederhana"><i class="fas fa-brain"></i>Neural Network</button>
+                <button class="qs-btn" data-prompt="Buatkan contoh REST API sederhana dengan Python Flask"><i class="fas fa-code"></i>Python REST API</button>
+                <button class="qs-btn" data-prompt="Apa perbedaan SQL dan NoSQL? Kapan pakai masing-masing?"><i class="fas fa-database"></i>SQL vs NoSQL</button>
+                <button class="qs-btn" data-prompt="Cara mencegah XSS dan SQL Injection pada web app"><i class="fas fa-shield-alt"></i>Web Security</button>
+            </div>
+        </div>
+        <div class="sb-foot">
+            <button class="sb-act danger" id="clearChatBtn"><i class="fas fa-trash-alt"></i> Hapus percakapan ini</button>
+        </div>
+    </aside>
+
+    <!-- CHAT -->
+    <main class="chat-area">
+        <div class="messages" id="messages">
+            <div class="welcome" id="welcomeView">
+                <div class="w-orb"></div>
+                <div class="w-title">kagui AI</div>
+                <p class="w-sub">Asisten AI cerdas siap membantumu. Tanya apa saja — coding, analisis, konsep, dan lainnya.</p>
+                <div class="w-hints">
+                    <span class="hint" data-prompt="Jelaskan perbedaan TCP dan UDP">📡 TCP vs UDP</span>
+                    <span class="hint" data-prompt="Buatkan fungsi JavaScript debounce">⚡ Debounce JS</span>
+                    <span class="hint" data-prompt="Apa itu Docker dan kenapa penting?">🐳 Docker</span>
+                    <span class="hint" data-prompt="Cara kerja JWT authentication">🔐 JWT Auth</span>
+                    <span class="hint" data-prompt="Query MongoDB aggregate penjualan per bulan">🍃 MongoDB Query</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-bar">
+            <div class="input-shell">
+                <textarea class="chat-ta" id="chatInput" placeholder="Kirim pesan ke kagui AI..." rows="1"></textarea>
+                <div class="in-right">
+                    <span class="char-ct" id="charCount"></span>
+                    <button class="send-btn" id="sendBtn"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+            <div class="bar-hint">Enter kirim &nbsp;·&nbsp; Shift+Enter baris baru &nbsp;·&nbsp; Ctrl+K fokus</div>
+        </div>
+    </main>
+</div>
+
+<div class="toast" id="toast"><i class="fas fa-exclamation-triangle"></i><span id="toastMsg"></span></div>
+<script src="index.js"></script>
+</body>
+</html>

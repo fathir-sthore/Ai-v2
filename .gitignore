@@ -1,0 +1,19 @@
+# !! File ini JANGAN diupload ke GitHub !!
+.env
+.env.local
+.env.production
+.env.*.local
+
+# Dependencies (Netlify install otomatis)
+node_modules/
+
+# Netlify cache
+.netlify/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*

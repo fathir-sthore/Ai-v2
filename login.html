@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — FADAX DRAK AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        :root{
+            --bg:#070707;--red:#8b0000;--red2:#b00000;--border:rgba(139,0,0,0.22);
+            --dim:#555;--txt:#e8e8e8;--txt2:#888;
+            --ui:'JetBrains Mono',monospace;--hd:'Orbitron',sans-serif;
+        }
+        html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--ui);font-size:14px}
+        body{
+            display:flex;align-items:center;justify-content:center;min-height:100vh;overflow:hidden;
+            background-image:
+                radial-gradient(ellipse 70% 60% at 15% 50%,rgba(139,0,0,0.07) 0%,transparent 60%),
+                radial-gradient(ellipse 60% 70% at 85% 30%,rgba(100,0,0,0.05) 0%,transparent 60%);
+        }
+        body::before{
+            content:'';position:fixed;inset:0;
+            background-image:linear-gradient(rgba(139,0,0,0.03) 1px,transparent 1px),
+                linear-gradient(90deg,rgba(139,0,0,0.03) 1px,transparent 1px);
+            background-size:50px 50px;pointer-events:none;z-index:0;
+        }
+
+        /* corner decorations */
+        .corner{position:fixed;width:100px;height:100px;z-index:0}
+        .c-tl{top:0;left:0;border-top:1px solid rgba(139,0,0,0.18);border-left:1px solid rgba(139,0,0,0.18)}
+        .c-tr{top:0;right:0;border-top:1px solid rgba(139,0,0,0.18);border-right:1px solid rgba(139,0,0,0.18)}
+        .c-bl{bottom:0;left:0;border-bottom:1px solid rgba(139,0,0,0.18);border-left:1px solid rgba(139,0,0,0.18)}
+        .c-br{bottom:0;right:0;border-bottom:1px solid rgba(139,0,0,0.18);border-right:1px solid rgba(139,0,0,0.18)}
+
+        /* CARD */
+        .card{position:relative;z-index:1;width:100%;max-width:390px;padding:0 1rem}
+        .card-box{
+            background:rgba(11,2,2,0.96);border:1px solid var(--border);border-radius:18px;
+            padding:2.2rem 2rem;backdrop-filter:blur(20px);
+            box-shadow:0 0 60px rgba(0,0,0,0.65),0 0 30px rgba(139,0,0,0.07);
+            position:relative;overflow:hidden;
+        }
+        .card-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+            background:linear-gradient(90deg,transparent,#8b0000,transparent)}
+        .card-box::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+            background:linear-gradient(90deg,transparent,rgba(139,0,0,0.3),transparent)}
+
+        /* LOGO */
+        .logo-wrap{display:flex;flex-direction:column;align-items:center;gap:0.7rem;margin-bottom:2rem}
+
+        /* AI avatar logo - anime girl */
+        .ai-avatar{
+            width:72px;height:72px;border-radius:50%;
+            background:url('https://files.catbox.moe/le2tsc.jpg') center/cover;
+            border:2px solid var(--red);
+            box-shadow:0 0 0 4px rgba(139,0,0,0.12),0 0 20px rgba(139,0,0,0.35);
+            animation:avatar-glow 3s ease-in-out infinite;
+            position:relative;
+        }
+        .ai-avatar::after{
+            content:'';position:absolute;inset:-4px;border-radius:50%;
+            border:1px solid rgba(139,0,0,0.2);animation:rotate-ring 8s linear infinite;
+            background:conic-gradient(from 0deg,transparent 80%,rgba(139,0,0,0.4) 100%);
+        }
+        @keyframes avatar-glow{0%,100%{box-shadow:0 0 0 4px rgba(139,0,0,0.1),0 0 16px rgba(139,0,0,0.25)}50%{box-shadow:0 0 0 4px rgba(139,0,0,0.18),0 0 26px rgba(139,0,0,0.45)}}
+        @keyframes rotate-ring{to{transform:rotate(360deg)}}
+
+        .logo-name{font-family:var(--hd);font-size:1rem;font-weight:900;letter-spacing:3px;
+            background:linear-gradient(135deg,#cc0000,#660000);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .logo-sub{font-size:0.63rem;color:var(--txt2);letter-spacing:2px;text-transform:uppercase}
+
+        /* TABS */
+        .tabs{
+            display:grid;grid-template-columns:1fr 1fr;background:rgba(0,0,0,0.3);
+            border-radius:8px;padding:3px;margin-bottom:1.6rem;border:1px solid var(--border);
+        }
+        .tab{background:transparent;border:none;color:var(--txt2);font-family:var(--ui);font-size:0.72rem;
+            padding:0.52rem;border-radius:6px;cursor:pointer;transition:all 0.2s;letter-spacing:1px;text-transform:uppercase}
+        .tab.active{background:var(--red);color:#fff;box-shadow:0 0 10px rgba(139,0,0,0.28)}
+
+        /* FORM PANELS */
+        .form-panel{display:none}
+        .form-panel.active{display:block;animation:pIn 0.22s ease}
+        @keyframes pIn{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:translateX(0)}}
+
+        .field{margin-bottom:1.05rem}
+        .field-label{
+            display:flex;align-items:center;gap:0.4rem;font-size:0.64rem;color:var(--txt2);
+            text-transform:uppercase;letter-spacing:1.5px;margin-bottom:0.42rem;
+        }
+        .field-label i{color:rgba(139,0,0,0.55);font-size:0.62rem}
+        .lbl-right{margin-left:auto}
+
+        .iw{position:relative}
+        .fi{
+            width:100%;background:rgba(0,0,0,0.38);border:1px solid rgba(139,0,0,0.17);
+            border-radius:8px;color:var(--txt);font-family:var(--ui);font-size:0.84rem;
+            padding:0.78rem 2.5rem 0.78rem 1rem;transition:all 0.2s;outline:none;
+        }
+        .fi:focus{border-color:rgba(139,0,0,0.48);box-shadow:0 0 0 2px rgba(139,0,0,0.09)}
+        .fi::placeholder{color:rgba(120,70,70,0.38)}
+
+        .iico{position:absolute;right:0.8rem;top:50%;transform:translateY(-50%);color:rgba(139,0,0,0.3);font-size:0.8rem;pointer-events:none}
+        .tpw{position:absolute;right:0.8rem;top:50%;transform:translateY(-50%);
+            background:none;border:none;color:var(--txt2);cursor:pointer;font-size:0.8rem;transition:color 0.15s;padding:0}
+        .tpw:hover{color:var(--txt)}
+
+        .ferr{font-size:0.63rem;color:#ff8888;margin-top:0.28rem;display:none}
+        .ferr.show{display:block}
+
+        /* pw strength */
+        .pws{margin-top:0.38rem;display:none}
+        .pws.show{display:block}
+        .pwb-wrap{height:3px;background:rgba(255,255,255,0.07);border-radius:2px;overflow:hidden}
+        .pwb{height:100%;border-radius:2px;transition:all 0.3s;width:0%}
+        .pwl{font-size:0.58rem;color:var(--txt2);margin-top:0.28rem}
+
+        .forgot{font-size:0.63rem;color:rgba(139,0,0,0.55);text-decoration:none;transition:color 0.15s}
+        .forgot:hover{color:var(--red2)}
+
+        /* submit */
+        .sub-btn{
+            width:100%;background:linear-gradient(135deg,#8b0000,#520000);border:none;border-radius:9px;
+            color:#fff;font-family:var(--hd);font-size:0.8rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+            padding:0.88rem;cursor:pointer;transition:all 0.2s;box-shadow:0 0 14px rgba(139,0,0,0.18);margin-top:0.5rem;
+            display:flex;align-items:center;justify-content:center;gap:0.5rem;
+        }
+        .sub-btn:hover:not(:disabled){background:linear-gradient(135deg,#aa0000,#680000);box-shadow:0 0 24px rgba(139,0,0,0.32);transform:translateY(-1px)}
+        .sub-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+
+        /* divider */
+        .divider{display:flex;align-items:center;gap:0.7rem;margin:1.1rem 0}
+        .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+        .divider span{font-size:0.6rem;color:var(--dim);text-transform:uppercase;letter-spacing:1px}
+
+        .soc-row{display:grid;grid-template-columns:1fr 1fr;gap:0.45rem}
+        .soc-btn{
+            background:rgba(0,0,0,0.28);border:1px solid rgba(139,0,0,0.14);border-radius:7px;
+            color:var(--txt2);font-family:var(--ui);font-size:0.7rem;padding:0.56rem;
+            cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center;gap:0.45rem;
+        }
+        .soc-btn:hover{border-color:var(--red);color:var(--txt);background:rgba(139,0,0,0.07)}
+
+        /* alert */
+        .alert{
+            border-radius:7px;padding:0.65rem 0.9rem;font-size:0.72rem;margin-bottom:0.95rem;
+            display:none;align-items:center;gap:0.55rem;
+        }
+        .alert.show{display:flex}
+        .alert.err{background:rgba(180,0,0,0.09);border:1px solid rgba(180,0,0,0.22);color:#ff9999}
+        .alert.ok{background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.18);color:#6ee7a0}
+
+        .spinner{width:13px;height:13px;border:2px solid rgba(255,255,255,0.18);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite}
+        @keyframes spin{to{transform:rotate(360deg)}}
+
+        .card-foot{text-align:center;margin-top:1.5rem;font-size:0.62rem;color:var(--dim);line-height:1.9}
+        .card-foot a{color:rgba(139,0,0,0.5);text-decoration:none}
+        .card-foot a:hover{color:var(--red2)}
+
+        /* ── SCROLLBAR ── */
+        *{scrollbar-width:thin;scrollbar-color:rgba(139,0,0,0.2) transparent}
+    </style>
+</head>
+<body>
+
+<!-- corner decorations -->
+<div class="corner c-tl"></div>
+<div class="corner c-tr"></div>
+<div class="corner c-bl"></div>
+<div class="corner c-br"></div>
+
+<div class="card">
+  <div class="card-box">
+
+    <!-- LOGO / AVATAR -->
+    <div class="logo-wrap">
+        <div class="ai-avatar"></div>
+        <div class="logo-name">FADAX DRAK AI</div>
+        <div class="logo-sub">kagui AI Assistant</div>
+    </div>
+
+    <!-- ALERT -->
+    <div class="alert" id="alertBox">
+        <i class="fas fa-exclamation-circle"></i>
+        <span id="alertMsg"></span>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+        <button class="tab active" data-tab="login">Login</button>
+        <button class="tab" data-tab="register">Register</button>
+    </div>
+
+    <!-- ── LOGIN FORM ── -->
+    <div class="form-panel active" id="loginForm">
+
+        <div class="field">
+            <label class="field-label"><i class="fas fa-at"></i> Email / Username</label>
+            <div class="iw">
+                <input type="text" class="fi" id="loginId" placeholder="email atau username" autocomplete="username">
+                <i class="iico fas fa-user"></i>
+            </div>
+            <div class="ferr" id="loginIdErr"></div>
+        </div>
+
+        <div class="field">
+            <label class="field-label">
+                <i class="fas fa-lock"></i> Password
+                <a href="#" class="forgot lbl-right" id="forgotLink">Lupa password?</a>
+            </label>
+            <div class="iw">
+                <input type="password" class="fi" id="loginPw" placeholder="••••••••" autocomplete="current-password">
+                <button class="tpw" data-t="loginPw"><i class="fas fa-eye"></i></button>
+            </div>
+            <div class="ferr" id="loginPwErr"></div>
+        </div>
+
+        <button class="sub-btn" id="loginBtn">
+            <span>Masuk</span>
+            <i class="fas fa-arrow-right"></i>
+        </button>
+
+        <div class="divider"><span>atau</span></div>
+        <div class="soc-row">
+            <button class="soc-btn" id="googleBtn"><i class="fab fa-google"></i> Google</button>
+            <button class="soc-btn" id="githubBtn"><i class="fab fa-github"></i> GitHub</button>
+        </div>
+
+    </div>
+
+    <!-- ── REGISTER FORM ── -->
+    <div class="form-panel" id="registerForm">
+
+        <div class="field">
+            <label class="field-label"><i class="fas fa-user"></i> Username</label>
+            <div class="iw">
+                <input type="text" class="fi" id="regUser" placeholder="username kamu" autocomplete="username">
+                <i class="iico fas fa-at"></i>
+            </div>
+            <div class="ferr" id="regUserErr"></div>
+        </div>
+
+        <div class="field">
+            <label class="field-label"><i class="fas fa-envelope"></i> Email</label>
+            <div class="iw">
+                <input type="email" class="fi" id="regEmail" placeholder="email@domain.com" autocomplete="email">
+                <i class="iico fas fa-envelope"></i>
+            </div>
+            <div class="ferr" id="regEmailErr"></div>
+        </div>
+
+        <div class="field">
+            <label class="field-label"><i class="fas fa-lock"></i> Password</label>
+            <div class="iw">
+                <input type="password" class="fi" id="regPw" placeholder="Min. 8 karakter" autocomplete="new-password">
+                <button class="tpw" data-t="regPw"><i class="fas fa-eye"></i></button>
+            </div>
+            <div class="pws" id="pwStrength">
+                <div class="pwb-wrap"><div class="pwb" id="pwBar"></div></div>
+                <div class="pwl" id="pwLabel">Kekuatan password</div>
+            </div>
+            <div class="ferr" id="regPwErr"></div>
+        </div>
+
+        <div class="field">
+            <label class="field-label"><i class="fas fa-lock"></i> Konfirmasi Password</label>
+            <div class="iw">
+                <input type="password" class="fi" id="regConf" placeholder="Ulangi password" autocomplete="new-password">
+                <button class="tpw" data-t="regConf"><i class="fas fa-eye"></i></button>
+            </div>
+            <div class="ferr" id="regConfErr"></div>
+        </div>
+
+        <button class="sub-btn" id="registerBtn">
+            <span>Buat Akun</span>
+            <i class="fas fa-user-plus"></i>
+        </button>
+
+    </div>
+
+    <div class="card-foot">
+        Dengan masuk, kamu menyetujui <a href="#">Terms of Service</a> & <a href="#">Privacy Policy</a><br>
+        © 2025 FADAX DRAK AI · Selvi Time Daxyinz
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── TAB SWITCH ──
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.form-panel').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById(t.dataset.tab + 'Form').classList.add('active');
+    clearAlert();
+}));
+
+// ── TOGGLE PASSWORD ──
+document.querySelectorAll('.tpw').forEach(btn => btn.addEventListener('click', () => {
+    const inp = document.getElementById(btn.dataset.t);
+    const ic = btn.querySelector('i');
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+    ic.className = inp.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+}));
+
+// ── PASSWORD STRENGTH ──
+document.getElementById('regPw').addEventListener('input', function () {
+    const v = this.value;
+    const wrap = document.getElementById('pwStrength');
+    const bar  = document.getElementById('pwBar');
+    const lbl  = document.getElementById('pwLabel');
+    if (!v) { wrap.classList.remove('show'); return; }
+    wrap.classList.add('show');
+    let s = 0;
+    if (v.length >= 8)  s++;
+    if (v.length >= 12) s++;
+    if (/[A-Z]/.test(v)) s++;
+    if (/[0-9]/.test(v)) s++;
+    if (/[^A-Za-z0-9]/.test(v)) s++;
+    const lvl = [
+        {p:'20%',c:'#cc3333',t:'Sangat lemah'},
+        {p:'40%',c:'#cc5533',t:'Lemah'},
+        {p:'60%',c:'#cc9933',t:'Sedang'},
+        {p:'80%',c:'#88aa33',t:'Kuat'},
+        {p:'100%',c:'#22c55e',t:'Sangat kuat'}
+    ][Math.min(s, 4)];
+    bar.style.width = lvl.p; bar.style.background = lvl.c;
+    lbl.textContent = lvl.t; lbl.style.color = lvl.c;
+});
+
+// ── ALERT ──
+function showAlert(msg, type = 'err') {
+    const b = document.getElementById('alertBox'), m = document.getElementById('alertMsg');
+    b.className = `alert show ${type}`; m.textContent = msg;
+    b.querySelector('i').className = type === 'ok' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+}
+function clearAlert() { document.getElementById('alertBox').classList.remove('show'); }
+function ferr(id, msg) { const e = document.getElementById(id); if(e){e.textContent=msg;e.classList.toggle('show',!!msg);} }
+function clearErrs(...ids) { ids.forEach(id => ferr(id, '')); }
+
+// ── SESSION HELPERS ──
+function saveUser(u) { try{sessionStorage.setItem('_fx_usr', JSON.stringify(u));}catch(e){} }
+
+// ── LOGIN ──
+document.getElementById('loginBtn').addEventListener('click', async () => {
+    clearErrs('loginIdErr', 'loginPwErr'); clearAlert();
+    const id = document.getElementById('loginId').value.trim();
+    const pw = document.getElementById('loginPw').value;
+    let hasErr = false;
+    if (!id) { ferr('loginIdErr', 'Email/username wajib diisi'); hasErr = true; }
+    if (!pw) { ferr('loginPwErr', 'Password wajib diisi'); hasErr = true; }
+    if (hasErr) return;
+
+    const btn = document.getElementById('loginBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div><span>Memverifikasi...</span>';
+
+    try {
+        const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ identifier: id, password: pw })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            showAlert(data.message || 'Email/password salah. Coba lagi.');
+        } else {
+            // Save JWT & user info to sessionStorage
+            saveUser({ username: data.user.username, email: data.user.email, token: data.token });
+            showAlert('Login berhasil! Mengalihkan...', 'ok');
+            setTimeout(() => { window.location.href = 'ai.html'; }, 700);
+        }
+    } catch (e) {
+        showAlert('Koneksi gagal. Periksa internet kamu.');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>Masuk</span><i class="fas fa-arrow-right"></i>';
+    }
+});
+
+// ── REGISTER ──
+document.getElementById('registerBtn').addEventListener('click', async () => {
+    clearErrs('regUserErr','regEmailErr','regPwErr','regConfErr'); clearAlert();
+    const u = document.getElementById('regUser').value.trim();
+    const e = document.getElementById('regEmail').value.trim();
+    const p = document.getElementById('regPw').value;
+    const c = document.getElementById('regConf').value;
+    let hasErr = false;
+    if (!u || u.length < 3) { ferr('regUserErr', 'Username min. 3 karakter'); hasErr = true; }
+    if (!e || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) { ferr('regEmailErr', 'Format email tidak valid'); hasErr = true; }
+    if (!p || p.length < 8) { ferr('regPwErr', 'Password min. 8 karakter'); hasErr = true; }
+    if (p !== c) { ferr('regConfErr', 'Password tidak cocok'); hasErr = true; }
+    if (hasErr) return;
+
+    const btn = document.getElementById('registerBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div><span>Membuat akun...</span>';
+
+    try {
+        const res = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: u, email: e, password: p })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            showAlert(data.message || 'Registrasi gagal. Coba lagi.');
+        } else {
+            showAlert('Akun berhasil dibuat! Silahkan login.', 'ok');
+            setTimeout(() => document.querySelector('[data-tab="login"]').click(), 1100);
+        }
+    } catch (e) {
+        showAlert('Koneksi gagal. Periksa internet kamu.');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>Buat Akun</span><i class="fas fa-user-plus"></i>';
+    }
+});
+
+// ── ENTER SHORTCUT ──
+['loginId', 'loginPw'].forEach(id => {
+    document.getElementById(id)?.addEventListener('keydown', e => {
+        if (e.key === 'Enter') document.getElementById('loginBtn').click();
+    });
+});
+
+// ── FORGOT PASSWORD ──
+document.getElementById('forgotLink')?.addEventListener('click', e => {
+    e.preventDefault();
+    showAlert('Fitur reset password segera hadir.', 'ok');
+});
+
+// ── SOCIAL (placeholder) ──
+['googleBtn','githubBtn'].forEach(id => {
+    document.getElementById(id)?.addEventListener('click', () => showAlert('OAuth login segera tersedia.'));
+});
+
+// ── AUTO REDIRECT IF ALREADY LOGGED IN ──
+(function () {
+    try {
+        const u = sessionStorage.getItem('_fx_usr');
+        if (u && JSON.parse(u)?.token) window.location.href = 'ai.html';
+    } catch(e) {}
+})();
+</script>
+</body>
+</html>
